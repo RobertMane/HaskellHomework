@@ -49,12 +49,17 @@ conapsg (c:rl)=(c,1+(conaps_opt c rl)):conapsg (delaps_opt c rl)
 -- de handle specificat
 fGenRap::Handle->[(String,Int)]->IO()
 fGenRap h []=do
-              hPutStrLn h "*************************"
+              hSpace h 30;
+              hPutStrLn h "--------------------------";
               hClose h
 fGenRap h ((cuv,frec):rl)=do
-           hputColoana h cuv 15
-           hputColoana h (show frec) 9
-           hPutStrLn h "|"
+           hSpace h 30;
+	       hPutStr h "| ";
+           hputColoana h cuv 8;
+	       hPutStr h "|";
+	       hSpace h 5;
+           hputColoana h (show frec) 9;
+           hPutStrLn h "|";
            fGenRap h rl
 
 -- Afisare coloana
@@ -75,11 +80,17 @@ hSpace h n=hPutStr h " ">>hSpace h (n-1)
 -- Afisare statistica
 -- Varianta ecran
 print_rez::[(String,Int)]->IO()
-print_rez []=putStrLn "**************************"
+print_rez []=do 
+      space 50;
+      putStrLn "--------------------------"
 print_rez ((cuv,frec):rl)=do
-      putColoana cuv 15
-      putColoana (show frec) 9
-      putStrLn "|"
+      space 50;
+	  putStr "| ";
+      putColoana cuv 8;
+	  putStr "|";
+	  space 5;
+      putColoana (show frec) 9;
+      putStrLn "|";
       print_rez rl
 
 -- Afisare coloana
@@ -124,6 +135,7 @@ elimnonlit = words.(filter (\caracter -> isLetter caracter || isSpace caracter))
 printelemlis::[String]->IO()
 printelemlis [] = do return()
 printelemlis (c:rl)=do{
+                       space 25;
                        putStrLn c;
 					   hFlush stdout;
 					   printelemlis (delaps c rl)
@@ -135,7 +147,8 @@ existelemlista cuv (c:rl)
      |(cuv==c)=return True
      |otherwise=existelemlista cuv rl
 	 
--- 3) AFISAREA CUVANTULUI/CUVINTELOR CU NUMAR MAXIM DE APARITII DIN FISIER
+	 
+-- 1) AFISAREA CUVANTULUI/CUVINTELOR CU NUMAR MAXIM DE APARITII DIN FISIER
                   
 -- Functie care returneaza lista cu cuvantul/cuvintele care apar 
 -- de cele mai multe ori in fisier
@@ -155,7 +168,7 @@ nrmaxdeapar ((cuv,frec):rl)
 	 |otherwise = frec
 
 
--- 4) AFISAREA CUVANTULUI/CUVINTELOR CU NUMAR MINIM DE APARITII DIN FISIER
+-- 2) AFISAREA CUVANTULUI/CUVINTELOR CU NUMAR MINIM DE APARITII DIN FISIER
 
 -- Functie care returneaza lista cu cuvantul/cuvintele care apar 
 -- de cele mai putine ori in fisier
@@ -184,6 +197,19 @@ delper s (c:rl)
     |(s==c)=delper s rl
     |otherwise=c:(delper s rl)  
 	
+	
+-- Functie care afiseaza formatat continutul
+-- unei liste de string-uri
+afisareform::[String]->IO()
+afisareform [] = do return()
+afisareform (c:rl)=do{
+                     space 40;
+		             putStr"|";
+		             space 10;
+		             putColoana c 15;
+		             putStrLn"|";
+					 afisareform rl
+                    }
 
 -- FUNCTIA CARE SE EXECUTA LA PORNIREA PROGRAMULUI
 		  
@@ -195,7 +221,9 @@ ruleazaProgram numeFisier=do{
 		                               meniuOptiuni numeFisier
 		                              }
 							   else do{
-							           putStrLn "Nu exista un fisier cu numele specificat";
+							           clearScreen;
+							           setCursorPosition 12 40; 
+							           putStrLn "NU EXISTA UN FISIER CU NUMELE SPECIFICAT!";
 									   hFlush stdout;
 		     	                       temp<-getLine;
 		                               putStrLn temp;
@@ -213,24 +241,40 @@ afisaparcuvant cuv listCuv=do{
 	                  putStrLn "";
 	                  hFlush stdout;
 					  
-                      putStr "Cuvantul ales ,impreuna cu numarul sau de aparitii, este:";
+					  space 25;
+					  putStrLn "-------------------------------";
+					  hFlush stdout;
+					  space 25;
+                      putStrLn "| CUVANT ALES   |   FRECVENTA |";
+					  hFlush stdout;
+					  space 25;
+					  putStrLn "-------------------------------";
 					  hFlush stdout;
 					  
-					  putStrLn "";	
+					   
+					  space 25;
+					  putStr "| ";
 					  hFlush stdout;
 					  
-	                  putStrLn "";
+					  putColoana cuv 14;
+					  
+					  putStr "|";
 					  hFlush stdout;
 					  
-					  putStr cuv;
+					  space 3;
+					  putStr (show(conaps cuv listCuv));
+					  
+					  space 9;
+					  putStr "|";
 					  hFlush stdout;
 					  
-					  putStr " ";
-					  hFlush stdout;
-					  putStr " ";
+					  putStrLn"";
 					  hFlush stdout;
 					  
-					  print (conaps cuv listCuv);
+					  space 25;
+					  putStrLn "-------------------------------";
+					  hFlush stdout;
+					  
 					                      
 		              temp<-getLine;
 		              putStrLn temp
@@ -264,36 +308,79 @@ opt1 numeFisier=do{
                    rez<-return (conapsg lCuvS);
        
                    -- Afisare statistica pe ecran
-                   print_centr (map toUpper "Frecventa cuvintelor") 26;
+				   setCursorPosition 4 50;
+                   putStrLn "FRECVENTA CUVINTELOR";
+                   hFlush stdout;
+				   setCursorPosition 5 50;
+                   putStrLn ("IN FISIERUL:"++numeFisier);
+                   hFlush stdout;
                    putStrLn "";
-                   print_centr ("in fisierul:"++numeFisier) 26;
+                   putStrLn "";
 
-                   putStrLn "";
-                   putStrLn "";
-
-                   putStrLn "**************************";
-                   putStrLn "Cuvant         Frecventa ";
-                   putStrLn "**************************";
+                   setCursorPosition 7 50;
+                   putStrLn "--------------------------";
+				   setCursorPosition 8 50;
+                   putStrLn "| CUVANT   |   FRECVENTA |";
+				   setCursorPosition 9 50;
+                   putStrLn "--------------------------";
                    print_rez rez;
-       
-                   -- Generare raport statistic cu salvare 
-                   -- in fisierul <Raport.dat>
-                   h<-openFile "Raport.dat" WriteMode;
-                   hPutStrLn h "**************************";
-                   hPutStrLn h "Cuvant         Frecventa ";
-                   hPutStrLn h "**************************";
-                   fGenRap h rez;
 		
-                   setCursorPosition 1 0; 
-                   putStr "Cuvintele din text, impreuna cu frecventele acestora, sunt urmatoarele:";
+		           temp<-getLine;
+		           putStrLn temp
+                  }
+				  
+-- Optiune pentru afisarea raportului de statistica in
+-- in fisierul <Raport.dat>
+opt2::String->IO()
+opt2 numeFisier=do{
+                   clearScreen;
+				   
+				   -- Transformare continut fisier de test 
+                   -- in sir de caractere
+                   sirCar<-readFile numeFisier;
+
+                   -- Transformare sir de caractere 
+                   -- in lista de cuvinte
+		           lisCuv<-return (elimnonlit sirCar);
+		 
+                   -- Transformare cuvinte din lista lisCuv
+                   -- in varianta lor lower case
+                   llower<-return (stolower lisCuv);
+
+                   -- Sortare lista de cuvinte llower
+                   -- pentru a optimiza generarea statisticii         
+                   lCuvS<-return (sort llower);
+
+                   putStrLn "";
+                   putStrLn "";
+       
+                   -- Determinarea statisticii       
+                   rez<-return (conapsg lCuvS);
+				   
+				   -- Deschiderea fisierului pentru scriere
+				   
+                   h<-openFile "Raport.dat" WriteMode;
+				   
+				   hSpace h 30;
+                   hPutStrLn h "--------------------------";
+				   hSpace h 30;
+                   hPutStrLn h "| CUVANT   |   FRECVENTA |";
+				   hSpace h 30;
+                   hPutStrLn h "--------------------------";
+                   fGenRap h rez;
+				   
+                   setCursorPosition 12 40; 
+                   putStr "RAPORT DE STATISTICA CREAT CU SUCCES!";
                    hFlush stdout;
 		           temp<-getLine;
 		           putStrLn temp
                   }
 
+
+
 -- Optiune pentru a afisa frecventa unui singur cuvant
-opt2::String->IO()
-opt2 numeFisier=do{
+opt3::String->IO()
+opt3 numeFisier=do{
                    clearScreen;
 		           -- Transformare continut fisier de test 
                    -- in sir de caractere
@@ -311,19 +398,27 @@ opt2 numeFisier=do{
                    -- pentru a optimiza generarea statisticii         
                    lCuvS<-return (sort llower);
 		
-		           setCursorPosition 1 0;
+		
+		           setCursorPosition 2 40;
+		           putStrLn "AFISARE FRECVENTA PENTRU UN SINGUR CUVANT";
+		           hFlush stdout;
+		
+		           setCursorPosition 6 25;
 		           putStrLn "Cuvintele din text sunt urmatoarele:";
 		           hFlush stdout;
                    printelemlis lCuvS;
 
-                   putStrLn "";		
-		           putStr "Va rugam sa introduceti cuvantul pentru care doriti sa aflati frecventa:";
+                   putStrLn "";
+                   space 25;				   
+		           putStr "Va rugam sa introduceti cuvantul pentru care doriti sa aflati frecventa: ";
 		           hFlush stdout;
 		           cuv<-getLine;
 				   excuvinlista<-existelemlista cuv lCuvS;
 				   
 				   if excuvinlista == False 
-				      then do{putStrLn "Cuvantul introdus nu exista in lista ! Va rugam sa reincercati !";
+				      then do{clearScreen;
+					       setCursorPosition 12 30;
+					       putStrLn "CUVANTUL INTRODUS NU EXISTA IN LISTA ! VA RUGAM SA REINCERCATI !";
 					       hFlush stdout;
 						   temp<-getLine;
 		                   putStrLn temp;
@@ -336,8 +431,8 @@ opt2 numeFisier=do{
                   }
 
 -- Optiune pentru a afisa cuvantul cu cele mai multe aparitii si de cate ori apare acesta
-opt3::String->IO()
-opt3 numeFisier=do{
+opt4::String->IO()
+opt4 numeFisier=do{
         clearScreen;
 		-- Transformare continut fisier de test 
         -- in sir de caractere
@@ -357,18 +452,66 @@ opt3 numeFisier=do{
 		
 		-- Lista cuvintelor cu cele mai multe aparitii din text
 		lisMax<-return (cuvcunrmaxdeapar (conapsg lCuvS) (conapsg lCuvS));
-        setCursorPosition 1 0;  
 		
-        putStr "Cuvantul/cuvintele cu cele mai multe aparitii din text:";
-		printelemlis lisMax;
-        hFlush stdout;
+        setCursorPosition 2 40;  
+		
+        putStrLn "CUVANTUL/CUVINTELE CU CELE";
+		hFlush stdout;
+		space 40;
+		putStrLn "MAI MULTE APARITII DIN TEXT";
+		hFlush stdout;
+		
+		putStrLn"";
+		hFlush stdout;
+		putStrLn"";
+		hFlush stdout;
+		putStrLn"";
+		hFlush stdout;
+		
+		space 40;
+		putStrLn"---------------------------";
+		
+		
+		space 40;
+		putStrLn"|     CUVANT/CUVINTE      |";
+		
+		space 40;
+		putStrLn"---------------------------";
+		
+		afisareform lisMax;
+		
+		space 40;
+		putStrLn"---------------------------";
+		
+		putStrLn"";
+		putStrLn"";
+		putStrLn"";
+		
+		space 40;
+		putStrLn"---------------------------";
+		
+		space 40;
+		putStrLn"|     NUMAR APARITII      |";
+		
+		space 40;
+		putStrLn"---------------------------";
+		
+		space 40;
+		putStr"|";
+		space 12;
+		putColoana (show (nrmaxdeapar(conapsg lCuvS))) 13;
+		putStrLn"|";
+		
+		space 40;
+		putStrLn"---------------------------";
+        
 		temp<-getLine;
 		putStrLn temp
        }
 
 -- Optiune pentru a afisa cuvantul cu cele mai putine aparitii si de cate ori apare acesta
-opt4::String->IO()
-opt4 numeFisier=do{
+opt5::String->IO()
+opt5 numeFisier=do{
          clearScreen;
 		-- Transformare continut fisier de test 
         -- in sir de caractere
@@ -388,20 +531,69 @@ opt4 numeFisier=do{
 		
 		-- Lista cuvintelor cu cele mai putine aparitii din text
 		lisMin<-return (cuvcunrmindeapar (conapsg lCuvS) (conapsg lCuvS));
-        setCursorPosition 1 0;  
+        
 		
-        putStr "Cuvantul/cuvintele cu cele mai putine aparitii din text:";
-		printelemlis lisMin;
-        hFlush stdout;
+		setCursorPosition 2 40;  
+		
+        putStrLn "CUVANTUL/CUVINTELE CU CELE";
+		hFlush stdout;
+		space 40;
+		putStrLn "MAI PUTINE APARITII DIN TEXT";
+		hFlush stdout;
+		
+		putStrLn"";
+		hFlush stdout;
+		putStrLn"";
+		hFlush stdout;
+		putStrLn"";
+		hFlush stdout;
+		
+		space 40;
+		putStrLn"---------------------------";
+		
+		
+		space 40;
+		putStrLn"|     CUVANT/CUVINTE      |";
+		
+		space 40;
+		putStrLn"---------------------------";
+		
+		afisareform lisMin;
+		
+		space 40;
+		putStrLn"---------------------------";
+		
+		putStrLn"";
+		putStrLn"";
+		putStrLn"";
+		
+		space 40;
+		putStrLn"---------------------------";
+		
+		space 40;
+		putStrLn"|     NUMAR APARITII      |";
+		
+		space 40;
+		putStrLn"---------------------------";
+		
+		space 40;
+		putStr"|";
+		space 12;
+		putColoana (show (nrmindeapar(conapsg lCuvS))) 13;
+		putStrLn"|";
+		
+		space 40;
+		putStrLn"---------------------------";
+        
 		temp<-getLine;
 		putStrLn temp
        }
 -- Optiune pentru a iesi din program    
-opt5::IO()
-opt5=do{
+opt7::IO()
+opt7=do{
         clearScreen;
-        setCursorPosition 1 0; 
-        putStr "La revedere !";
+        setCursorPosition 12 50; 
+        putStr "LA REVEDERE !";
         hFlush stdout;
 		temp<-getLine;
 		putStrLn temp
@@ -421,23 +613,33 @@ execopt opt numeFisier | (opt=="1")=do{
                                        opt1 numeFisier;
 							           meniuOptiuni numeFisier
                                       }
-
+									  
 execopt opt numeFisier | (opt=="2")=do{
                                        opt2 numeFisier;
                                        meniuOptiuni numeFisier							 
                                       }
 				
+
 execopt opt numeFisier | (opt=="3")=do{
                                        opt3 numeFisier;
-							           meniuOptiuni numeFisier
-							          }
-
+                                       meniuOptiuni numeFisier							 
+                                      }
+				
 execopt opt numeFisier | (opt=="4")=do{
                                        opt4 numeFisier;
 							           meniuOptiuni numeFisier
 							          }
+
 execopt opt numeFisier | (opt=="5")=do{
-                                       opt5;
+                                       opt5 numeFisier;
+							           meniuOptiuni numeFisier
+							          }
+									 
+execopt opt numeFisier | (opt=="6")=do{
+                                       main;
+							          }									 
+execopt opt numeFisier | (opt=="7")=do{
+                                       opt7;
 							          }
 							 
 execopt opt numeFisier=do{
@@ -448,20 +650,35 @@ execopt opt numeFisier=do{
 meniuOptiuni::String->IO() 
 meniuOptiuni numeFisier=do{
 		clearScreen;
+		setCursorPosition 2 50;
+		putStrLn "MENIU PRINCIPAL";
 		hFlush stdout;
-		setCursorPosition 1 0;
+		setCursorPosition 5 20;
 		putStrLn "Va rugam sa selectati una dintre optiunile de mai jos :";
 		hFlush stdout;
-		setCursorPosition 3 0;
+		setCursorPosition 7 20;
 		putStrLn "1. Afisarea tabelara a tuturor cuvintelor din fisier impreuna cu frecventele lor.";
 		hFlush stdout;
-		putStrLn "2. Afisarea unui anumit cuvant impreuna cu numarul sau de aparitii din text.";
+		setCursorPosition 8 20;
+		putStrLn "2. Afisarea raportului de statistica a cuvintelor in fisier.";
 		hFlush stdout;
-		putStrLn "3. Afisarea cuvantului cu cele mai multe aparitii in text si de cate ori apare acesta.";
+		setCursorPosition 9 20;
+		putStrLn "3. Afisarea unui anumit cuvant impreuna cu numarul sau de aparitii din text.";
 		hFlush stdout;
-		putStrLn "4. Afisarea cuvantului cu cele mai putine aparitii in text si de cate ori apare acesta.";
+		setCursorPosition 10 20;
+		putStrLn "4. Afisarea cuvantului cu cele mai multe aparitii din text si de cate ori apare acesta.";
 		hFlush stdout;
-		putStrLn "5. Pentru a iesi din program.";
+		setCursorPosition 11 20;
+		putStrLn "5. Afisarea cuvantului cu cele mai putine aparitii din text si de cate ori apare acesta.";
+		hFlush stdout;
+		setCursorPosition 12 20;
+		putStrLn "6. Pentru a va intoarce la meniul de alegere a fisierului.";
+		hFlush stdout;
+		setCursorPosition 13 20;
+		putStrLn "7. Pentru a iesi din program.";
+		hFlush stdout;
+		setCursorPosition 16 20;
+		putStr "Optiunea dvs.: ";
 		hFlush stdout;
 		opt<-getLine;
 		execopt opt numeFisier
@@ -469,10 +686,13 @@ meniuOptiuni numeFisier=do{
 
 main::IO()		
 main=do{
-        setTitle " Afisare Frecvente Cuvinte";
+        setTitle "Afisare Frecvente Cuvinte";
 		clearScreen;
-		setCursorPosition 1 0;
-	    putStr "Va rugam sa introduceti numele fisierului pe care doriti sa il analizati:";
+		setCursorPosition 2 40;
+	    putStr "ALEGEREA FISIERULUI DE LUCRU";
+        hFlush stdout;
+		setCursorPosition 8 20;
+	    putStr "Va rugam sa introduceti numele fisierului pe care doriti sa il analizati: ";
         hFlush stdout;
         numeFisier<-getLine;
 		ruleazaProgram numeFisier			
